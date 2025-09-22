@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="tikatuwq authors" />
+
+
+<title>tikatuwq: basic workflow</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">tikatuwq: basic workflow</h1>
+<h4 class="author">tikatuwq authors</h4>
+
+
+
+<div id="load-demo-dataset" class="section level2">
+<h2>Load demo dataset</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">data</span>(<span class="st">&quot;wq_demo&quot;</span>, <span class="at">package =</span> <span class="st">&quot;tikatuwq&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">head</span>(wq_demo)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt;   ponto       data   ph   od turbidez  dbo coliformes p_total nt_total</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; 1    P1 2024-06-07 7.08 5.33     63.8 5.38        331   0.080     1.30</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; 2    P1 2024-06-27 6.79 8.29     35.7 1.46         98   0.348     3.69</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; 3    P1 2024-01-14 8.43 4.23     60.6 1.22       3712   0.313     4.25</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; 4    P1 2024-07-13 8.30 6.21     50.7 4.09        200   0.447     2.54</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; 5    P1 2024-06-18 7.88 7.99     57.1 2.39         66   0.340     2.00</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt; 6    P2 2024-02-19 8.09 4.61      1.0 4.11       3930   0.371     1.31</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt;   temperatura tds</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; 1        23.0 249</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; 2        21.2 329</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; 3        25.6 480</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; 4        20.2 731</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt; 5        28.4 201</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#&gt; 6        27.0 724</span></span></code></pre></div>
+</div>
+<div id="compute-iqa-and-check-conama-compliance" class="section level2">
+<h2>Compute IQA and check CONAMA compliance</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(tikatuwq)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>df <span class="ot">&lt;-</span> wq_demo <span class="sc">|&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">validate_wq</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">iqa</span>(<span class="at">na_rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>conf <span class="ot">&lt;-</span> <span class="fu">conama_check</span>(df, <span class="at">classe =</span> <span class="st">&quot;2&quot;</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">head</span>(conf)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt;   ponto       data   ph   od turbidez  dbo coliformes p_total nt_total</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; 1    P1 2024-06-07 7.08 5.33     63.8 5.38        331   0.080     1.30</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; 2    P1 2024-06-27 6.79 8.29     35.7 1.46         98   0.348     3.69</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; 3    P1 2024-01-14 8.43 4.23     60.6 1.22       3712   0.313     4.25</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; 4    P1 2024-07-13 8.30 6.21     50.7 4.09        200   0.447     2.54</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; 5    P1 2024-06-18 7.88 7.99     57.1 2.39         66   0.340     2.00</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; 6    P2 2024-02-19 8.09 4.61      1.0 4.11       3930   0.371     1.31</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt;   temperatura tds      IQA ph_ok ph_status ph__lim_min ph__lim_max ph__delta</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; 1        23.0 249 58.46746  TRUE        ok           6           9         0</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; 2        21.2 329 57.31295  TRUE        ok           6           9         0</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; 3        25.6 480 41.29367  TRUE        ok           6           9         0</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; 4        20.2 731 47.46528  TRUE        ok           6           9         0</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; 5        28.4 201 59.76570  TRUE        ok           6           9         0</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; 6        27.0 724 40.32756  TRUE        ok           6           9         0</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt;   od_ok        od_status od__lim_min od__lim_max od__delta turbidez_ok</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; 1  TRUE               ok           5          NA      0.00        TRUE</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; 2  TRUE               ok           5          NA      0.00        TRUE</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; 3 FALSE abaixo_do_minimo           5          NA     -0.77        TRUE</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; 4  TRUE               ok           5          NA      0.00        TRUE</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt; 5  TRUE               ok           5          NA      0.00        TRUE</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="co">#&gt; 6 FALSE abaixo_do_minimo           5          NA     -0.39        TRUE</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">#&gt;   turbidez_status turbidez__lim_min turbidez__lim_max turbidez__delta dbo_ok</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co">#&gt; 1              ok                NA               100               0  FALSE</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">#&gt; 2              ok                NA               100               0   TRUE</span></span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co">#&gt; 3              ok                NA               100               0   TRUE</span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co">#&gt; 4              ok                NA               100               0   TRUE</span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a><span class="co">#&gt; 5              ok                NA               100               0   TRUE</span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a><span class="co">#&gt; 6              ok                NA               100               0   TRUE</span></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="co">#&gt;        dbo_status dbo__lim_min dbo__lim_max dbo__delta coliformes_ok</span></span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="co">#&gt; 1 acima_do_maximo           NA            5       0.38          TRUE</span></span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a><span class="co">#&gt; 2              ok           NA            5       0.00          TRUE</span></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co">#&gt; 3              ok           NA            5       0.00         FALSE</span></span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a><span class="co">#&gt; 4              ok           NA            5       0.00          TRUE</span></span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a><span class="co">#&gt; 5              ok           NA            5       0.00          TRUE</span></span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a><span class="co">#&gt; 6              ok           NA            5       0.00         FALSE</span></span>
+<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a><span class="co">#&gt;   coliformes_status coliformes__lim_min coliformes__lim_max coliformes__delta</span></span>
+<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a><span class="co">#&gt; 1                ok                  NA                1000                 0</span></span>
+<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a><span class="co">#&gt; 2                ok                  NA                1000                 0</span></span>
+<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a><span class="co">#&gt; 3   acima_do_maximo                  NA                1000              2712</span></span>
+<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a><span class="co">#&gt; 4                ok                  NA                1000                 0</span></span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a><span class="co">#&gt; 5                ok                  NA                1000                 0</span></span>
+<span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a><span class="co">#&gt; 6   acima_do_maximo                  NA                1000              2930</span></span>
+<span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a><span class="co">#&gt;   p_total_ok  p_total_status p_total__lim_min p_total__lim_max p_total__delta</span></span>
+<span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a><span class="co">#&gt; 1      FALSE acima_do_maximo               NA             0.05          0.030</span></span>
+<span id="cb2-53"><a href="#cb2-53" tabindex="-1"></a><span class="co">#&gt; 2      FALSE acima_do_maximo               NA             0.05          0.298</span></span>
+<span id="cb2-54"><a href="#cb2-54" tabindex="-1"></a><span class="co">#&gt; 3      FALSE acima_do_maximo               NA             0.05          0.263</span></span>
+<span id="cb2-55"><a href="#cb2-55" tabindex="-1"></a><span class="co">#&gt; 4      FALSE acima_do_maximo               NA             0.05          0.397</span></span>
+<span id="cb2-56"><a href="#cb2-56" tabindex="-1"></a><span class="co">#&gt; 5      FALSE acima_do_maximo               NA             0.05          0.290</span></span>
+<span id="cb2-57"><a href="#cb2-57" tabindex="-1"></a><span class="co">#&gt; 6      FALSE acima_do_maximo               NA             0.05          0.321</span></span></code></pre></div>
+</div>
+<div id="summaries-and-plots" class="section level2">
+<h2>Summaries and plots</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">plot_iqa</span>(df)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; Warning: Removed 16 rows containing missing values or values outside the scale range</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; (`geom_col()`).</span></span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>conf_long <span class="ot">&lt;-</span> <span class="fu">conama_summary</span>(df, <span class="at">classe =</span> <span class="st">&quot;2&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">head</span>(conf_long)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 7</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;   parametro valor lim_min lim_max status ok    delta</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;lgl&gt; &lt;dbl&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; 1 ph         7.08       6       9 ok     TRUE      0</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; 2 ph         6.79       6       9 ok     TRUE      0</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; 3 ph         8.43       6       9 ok     TRUE      0</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; 4 ph         8.3        6       9 ok     TRUE      0</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; 5 ph         7.88       6       9 ok     TRUE      0</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; 6 ph         8.09       6       9 ok     TRUE      0</span></span></code></pre></div>
+</div>
+<div id="render-a-report-writes-to-a-temporary-directory" class="section level2">
+<h2>Render a report (writes to a temporary directory)</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Avoid running nested rendering during vignette build on CRAN</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>out_file <span class="ot">&lt;-</span> <span class="fu">render_report</span>(df)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>out_file</span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
