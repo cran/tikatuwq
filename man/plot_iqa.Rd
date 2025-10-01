@@ -10,8 +10,19 @@ plot_iqa(df)
 \item{df}{Data frame returned by \code{iqa()} (or with equivalent columns).}
 }
 \value{
-A ggplot object (class \code{ggplot}) representing IQA across sites/dates.
+A \code{ggplot} object.
 }
 \description{
-Plot IQA by site/date
+Bar plot of IQA values per site/date. Requires an \code{IQA} column.
+}
+\examples{
+\donttest{
+data(wq_demo)
+d <- iqa(wq_demo, na_rm = TRUE)
+plot_iqa(d)
+}
+
+}
+\seealso{
+\code{\link[=iqa]{iqa()}}, \code{\link[=plot_series]{plot_series()}}, \code{\link[=plot_box]{plot_box()}}
 }
