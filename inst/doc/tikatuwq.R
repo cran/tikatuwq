@@ -4,7 +4,9 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width = 7, fig.height = 4,
   dpi = 96,
-  message = FALSE, warning = FALSE
+  message = FALSE, warning = FALSE,
+  # Acessibilidade padrão (é sobrescrito se o chunk tiver fig.alt específico)
+  fig.alt = "Figura ilustrativa gerada pelo pacote tikatuwq."
 )
 # Guard to avoid interactive widgets on CRAN
 eval_interactive <- interactive()
@@ -79,12 +81,12 @@ conf <- tryCatch({
 
 if (!is.null(conf)) head(conf)
 
-## -----------------------------------------------------------------------------
+## ----plot-iqa, fig.alt="Gráfico do IQA por ponto (síntese visual do índice calculado pelo tikatuwq).", fig.cap="IQA por ponto para o dataset de demonstração."----
 if (isTRUE(ok_iqa)) {
   plot_iqa(df)
 }
 
-## -----------------------------------------------------------------------------
+## ----summary-conama-----------------------------------------------------------
 conf_long <- tryCatch(conama_summary(df, classe = "2"), error = function(e) NULL)
 if (!is.null(conf_long)) head(conf_long)
 
@@ -93,7 +95,7 @@ if (!is.null(conf_long)) head(conf_long)
 # out_file <- render_report(df)
 # out_file
 
-## -----------------------------------------------------------------------------
+## ----map-basic----------------------------------------------------------------
 if (eval_interactive) {
   # Minimal example dataset with coordinates
   df_map <- data.frame(
@@ -112,7 +114,7 @@ if (eval_interactive) {
   )
 }
 
-## -----------------------------------------------------------------------------
+## ----map-alt------------------------------------------------------------------
 if (eval_interactive) {
   plot_map(
     df_map,
