@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="tikatuwq developers" />
+
+
+<title>tikatuwq: From raw water quality data to CONAMA report</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">tikatuwq: From raw water quality data to
+CONAMA report</h1>
+<h4 class="author">tikatuwq developers</h4>
+
+
+
+<div id="introduction" class="section level2" number="1">
+<h2><span class="header-section-number">1</span> Introduction</h2>
+<p>The tikatuwq package provides a reproducible workflow for Brazilian
+water quality assessment. It implements common indices such as the
+IQA/WQI and Carlson or Lamparelli trophic state indices, together with
+CONAMA 357/2005 compliance checks, plotting helpers and basic reporting
+tools.</p>
+<p>The package now includes a real dataset containing water quality
+measurements collected by INEMA (Environmental Agency of Bahia) during
+monitoring campaigns between 2021 and 2024 in the Rio Buranhem
+watershed, Porto Seguro, Bahia, Brazil. This dataset is included for
+demonstration and reproducibility purposes, closely following the
+analytical workflow presented in this vignette. All variable names
+correspond to real monitoring attributes.</p>
+<p>In this vignette we demonstrate a typical pipeline: reading a raw CSV
+file, handling censored values (ND / &lt;LD / &lt;LOQ), cleaning units,
+computing indices, checking legal compliance and generating simple plots
+and a textual report. The goal is to show an end-to-end example that
+users can adapt to their own datasets.</p>
+<p>This workflow is particularly useful for environmental monitoring
+programs that need to comply with Brazilian regulations and produce
+standardized reports for regulatory agencies.</p>
+</div>
+<div id="package-overview-and-included-real-data" class="section level2" number="2">
+<h2><span class="header-section-number">2</span> Package overview and
+included real data</h2>
+<p>We start by loading the package and examining the included real
+dataset from Buranhem River/INEMA:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(tikatuwq)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;wq_demo&quot;</span>, <span class="at">package =</span> <span class="st">&quot;tikatuwq&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co"># Inspect structure</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">str</span>(wq_demo)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; tibble [20 × 14] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt;  $ rio        : chr [1:20] &quot;BURANHEM&quot; &quot;BURANHEM&quot; &quot;BURANHEM&quot; &quot;BURANHEM&quot; ...</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt;  $ ponto      : chr [1:20] &quot;FBS-BRH-250&quot; &quot;FBS-BRH-250&quot; &quot;FBS-BRH-250&quot; &quot;FBS-BRH-250&quot; ...</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt;  $ data       : Date[1:20], format: &quot;2020-03-03&quot; &quot;2022-03-10&quot; ...</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt;  $ ph         : num [1:20] 6.52 6.97 8.19 7.55 7.8 6.39 5.87 8.53 7.08 8.1 ...</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt;  $ od         : num [1:20] 6.03 6.52 6.13 5.96 7.58 6.7 6.51 6.19 7.51 7.3 ...</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt;  $ turbidez   : num [1:20] 63.5 18.3 9 112 5.8 11.4 68.6 10.4 141 5.4 ...</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt;  $ dbo        : num [1:20] 3 3 4 3 3 7 4 4 3 3 ...</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#&gt;  $ coliformes : num [1:20] 7.9 9.2 7.9 1.7 2.3 1.3 5.4 2.3 1.6 7.9 ...</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt;  $ p_total    : num [1:20] 0.02 0.04 0.02 0.08 0.02 0.03 0.03 0.02 0.1 0.03 ...</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt;  $ nt_total   : num [1:20] 1 1 1 1.9 1 1 1 1 1.8 1 ...</span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt;  $ temperatura: num [1:20] 30.1 26.5 27.4 30.1 29.1 28.7 25.8 25.5 26.7 28.6 ...</span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt;  $ tds        : num [1:20] 119 51 50 50 50 60 68 52 50 52 ...</span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co">#&gt;  $ lat        : num [1:20] -16.4 -16.4 -16.4 -16.4 -16.4 ...</span></span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#&gt;  $ lon        : num [1:20] -39.6 -39.6 -39.6 -39.6 -39.6 ...</span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="fu">head</span>(wq_demo)</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 14</span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt;   rio    ponto data          ph    od turbidez   dbo coliformes p_total nt_total</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 1 BURAN… FBS-… 2020-03-03  6.52  6.03     63.5     3        7.9    0.02      1  </span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 2 BURAN… FBS-… 2022-03-10  6.97  6.52     18.3     3        9.2    0.04      1  </span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co">#&gt; 3 BURAN… FBS-… 2023-05-24  8.19  6.13      9       4        7.9    0.02      1  </span></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#&gt; 4 BURAN… FBS-… 2024-02-20  7.55  5.96    112       3        1.7    0.08      1.9</span></span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt; 5 BURAN… FBS-… 2024-09-04  7.8   7.58      5.8     3        2.3    0.02      1  </span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt; 6 BURAN… FBS-… 2020-03-04  6.39  6.7      11.4     7        1.3    0.03      1  </span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a><span class="co">#&gt; # ℹ 4 more variables: temperatura &lt;dbl&gt;, tds &lt;dbl&gt;, lat &lt;dbl&gt;, lon &lt;dbl&gt;</span></span></code></pre></div>
+<p>The <code>wq_demo</code> dataset contains 20 rows and 14 columns,
+including: - <code>rio</code>: river name (BURANHEM) -
+<code>ponto</code>: monitoring point identifier - <code>data</code>:
+sampling date - <code>ph</code>, <code>od</code>, <code>turbidez</code>,
+<code>dbo</code>: water quality parameters - <code>coliformes</code>:
+fecal coliforms - <code>p_total</code>, <code>nt_total</code>:
+phosphorus and nitrogen - <code>temperatura</code>, <code>tds</code>:
+temperature and total dissolved solids - <code>lat</code>,
+<code>lon</code>: coordinates</p>
+</div>
+<div id="reading-and-validating-water-quality-data" class="section level2" number="3">
+<h2><span class="header-section-number">3</span> Reading and validating
+water quality data</h2>
+<p>The first step in any analysis is reading the raw data. The
+<code>read_wq()</code> function handles common CSV formats with robust
+parsing:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Example: reading from a CSV file</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># df &lt;- read_wq(&quot;path/to/your/data.csv&quot;)</span></span></code></pre></div>
+<p>For this vignette, we use the demo dataset. In practice,
+<code>read_wq()</code> handles: - Comma or semicolon delimiters - Comma
+or dot decimal separators - Unit suffixes in numeric columns (e.g.,
+“0.04 mg/L”) - Date formats (YYYY-MM-DD or DD/MM/YYYY) - Coordinate
+normalization if needed</p>
+<p>Next, we validate that required columns are present:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>df <span class="ot">&lt;-</span> wq_demo</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># Validate required columns</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">validate_wq</span>(df)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># Check structure</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="fu">str</span>(df)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; tibble [20 × 14] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;  $ rio        : chr [1:20] &quot;BURANHEM&quot; &quot;BURANHEM&quot; &quot;BURANHEM&quot; &quot;BURANHEM&quot; ...</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;  $ ponto      : chr [1:20] &quot;FBS-BRH-250&quot; &quot;FBS-BRH-250&quot; &quot;FBS-BRH-250&quot; &quot;FBS-BRH-250&quot; ...</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;  $ data       : Date[1:20], format: &quot;2020-03-03&quot; &quot;2022-03-10&quot; ...</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;  $ ph         : num [1:20] 6.52 6.97 8.19 7.55 7.8 6.39 5.87 8.53 7.08 8.1 ...</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;  $ od         : num [1:20] 6.03 6.52 6.13 5.96 7.58 6.7 6.51 6.19 7.51 7.3 ...</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;  $ turbidez   : num [1:20] 63.5 18.3 9 112 5.8 11.4 68.6 10.4 141 5.4 ...</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;  $ dbo        : num [1:20] 3 3 4 3 3 7 4 4 3 3 ...</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;  $ coliformes : num [1:20] 7.9 9.2 7.9 1.7 2.3 1.3 5.4 2.3 1.6 7.9 ...</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;  $ p_total    : num [1:20] 0.02 0.04 0.02 0.08 0.02 0.03 0.03 0.02 0.1 0.03 ...</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt;  $ nt_total   : num [1:20] 1 1 1 1.9 1 1 1 1 1.8 1 ...</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;  $ temperatura: num [1:20] 30.1 26.5 27.4 30.1 29.1 28.7 25.8 25.5 26.7 28.6 ...</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;  $ tds        : num [1:20] 119 51 50 50 50 60 68 52 50 52 ...</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;  $ lat        : num [1:20] -16.4 -16.4 -16.4 -16.4 -16.4 ...</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;  $ lon        : num [1:20] -39.6 -39.6 -39.6 -39.6 -39.6 ...</span></span></code></pre></div>
+<p>The <code>validate_wq()</code> function ensures that the minimal set
+of columns required for IQA calculation and CONAMA checks is
+present.</p>
+</div>
+<div id="handling-censored-values-nd-ld-loq" class="section level2" number="4">
+<h2><span class="header-section-number">4</span> Handling censored
+values (ND / &lt;LD / &lt;LOQ)</h2>
+<p>Water quality data often contains censored values, where
+concentrations are below the detection limit. The tikatuwq package
+provides explicit handling for these cases.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Example with censored values</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co"># If your CSV contains values like &quot;&lt;0.01&quot;, &quot;&lt;LD&quot;, or &quot;ND&quot;, read_wq() handles them</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co"># with the nd_policy parameter:</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># df_with_nd &lt;- read_wq(&quot;data.csv&quot;, nd_policy = &quot;ld2&quot;)</span></span></code></pre></div>
+<p>The <code>nd_policy</code> parameter accepts four options: -
+<code>&quot;ld2&quot;</code> (default): uses half of the detection limit -
+<code>&quot;ld&quot;</code>: uses the detection limit value - <code>&quot;zero&quot;</code>:
+replaces with 0 - <code>&quot;na&quot;</code>: replaces with NA</p>
+<p>For this demo, the dataset does not contain censored values, but in
+real data you would see them parsed automatically when using
+<code>read_wq()</code>.</p>
+</div>
+<div id="cleaning-units-and-basic-qaqc" class="section level2" number="5">
+<h2><span class="header-section-number">5</span> Cleaning units and
+basic QA/QC</h2>
+<p>The <code>clean_units()</code> function validates parameter ranges
+and can convert units if specified:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Clean and validate units</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>df_clean <span class="ot">&lt;-</span> <span class="fu">clean_units</span>(df)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># If units need conversion (e.g., ug/L to mg/L for phosphorus):</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># df_clean &lt;- clean_units(df, units_map = list(p_total = &quot;ug/L&quot;))</span></span></code></pre></div>
+<p>The function: - Validates typical ranges (pH, OD, turbidity, etc.) -
+Warns about outliers - Converts units when <code>units_map</code> is
+provided</p>
+</div>
+<div id="computing-indices-iqa-and-trophic-state" class="section level2" number="6">
+<h2><span class="header-section-number">6</span> Computing indices (IQA
+and trophic state)</h2>
+<div id="water-quality-index-iqa" class="section level3" number="6.1">
+<h3><span class="header-section-number">6.1</span> Water Quality Index
+(IQA)</h3>
+<p>The IQA combines multiple parameters into a single score (0-100):</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Compute IQA</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>df_iqa <span class="ot">&lt;-</span> <span class="fu">iqa</span>(df_clean, <span class="at">na_rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># View results</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="fu">head</span>(df_iqa[, <span class="fu">c</span>(<span class="st">&quot;ponto&quot;</span>, <span class="st">&quot;IQA&quot;</span>, <span class="st">&quot;IQA_status&quot;</span>)])</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 3</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt;   ponto         IQA IQA_status</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;ord&gt;     </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; 1 FBS-BRH-250  89.8 Boa       </span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 2 FBS-BRH-250  93.1 Otima     </span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; 3 FBS-BRH-250  92.2 Otima     </span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; 4 FBS-BRH-250  87.6 Boa       </span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 5 FBS-BRH-250  95.7 Otima     </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; 6 FBS-BRH-300  89.3 Boa</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co"># Summary</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="fu">summary</span>(df_iqa<span class="sc">$</span>IQA)</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;   85.35   89.18   91.91   91.35   93.88   95.72</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="fu">table</span>(df_iqa<span class="sc">$</span>IQA_status)</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; Muito ruim       Ruim    Regular        Boa      Otima </span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt;          0          0          0          8         12</span></span></code></pre></div>
+<p>The <code>IQA_status</code> column provides qualitative
+classification (Very Poor, Poor, Fair, Good, Excellent).</p>
+</div>
+<div id="trophic-state-index-iet" class="section level3" number="6.2">
+<h3><span class="header-section-number">6.2</span> Trophic State Index
+(IET)</h3>
+<p>For lakes and reservoirs, trophic state indices indicate
+eutrophication level:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Carlson IET (requires secchi depth, chlorophyll, total phosphorus)</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co"># df_iet &lt;- iet_carlson(df, .keep_ids = TRUE)</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># Lamparelli IET</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co"># df_iet &lt;- iet_lamparelli(df, .keep_ids = TRUE)</span></span></code></pre></div>
+<p>Note: IET functions require specific parameters (secchi depth,
+chlorophyll) that are not in <code>wq_demo</code>. Use them when
+analyzing lentic (still water) systems.</p>
+</div>
+</div>
+<div id="checking-conama-3572005-compliance" class="section level2" number="7">
+<h2><span class="header-section-number">7</span> Checking CONAMA
+357/2005 compliance</h2>
+<p>The CONAMA Resolution 357/2005 establishes limits for water quality
+parameters according to water use classes (1-4 and special). The package
+provides several functions to check compliance:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Check compliance for class 2 (default)</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>df_conama <span class="ot">&lt;-</span> <span class="fu">conama_check</span>(df_iqa, <span class="at">classe =</span> <span class="st">&quot;2&quot;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co"># View compliance columns (one per parameter)</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="fu">head</span>(df_conama[, <span class="fu">grep</span>(<span class="st">&quot;_ok$&quot;</span>, <span class="fu">names</span>(df_conama))])</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 6</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt;   ph_ok od_ok turbidez_ok dbo_ok coliformes_ok p_total_ok</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt;   &lt;lgl&gt; &lt;lgl&gt; &lt;lgl&gt;       &lt;lgl&gt;  &lt;lgl&gt;         &lt;lgl&gt;     </span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; 1 TRUE  TRUE  TRUE        TRUE   TRUE          TRUE      </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; 2 TRUE  TRUE  TRUE        TRUE   TRUE          TRUE      </span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; 3 TRUE  TRUE  TRUE        TRUE   TRUE          TRUE      </span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; 4 TRUE  TRUE  FALSE       TRUE   TRUE          FALSE     </span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; 5 TRUE  TRUE  TRUE        TRUE   TRUE          TRUE      </span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; 6 TRUE  TRUE  TRUE        FALSE  TRUE          TRUE</span></span></code></pre></div>
+<div id="summary-and-reports" class="section level3" number="7.1">
+<h3><span class="header-section-number">7.1</span> Summary and
+reports</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Long-format summary</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>summary_long <span class="ot">&lt;-</span> <span class="fu">conama_summary</span>(df_conama, <span class="at">classe =</span> <span class="st">&quot;2&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">head</span>(summary_long)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 7</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt;   parametro valor lim_min lim_max status ok    delta</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;lgl&gt; &lt;dbl&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; 1 ph         6.52       6       9 ok     TRUE      0</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; 2 ph         6.97       6       9 ok     TRUE      0</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 3 ph         8.19       6       9 ok     TRUE      0</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 4 ph         7.55       6       9 ok     TRUE      0</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 5 ph         7.8        6       9 ok     TRUE      0</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 6 ph         6.39       6       9 ok     TRUE      0</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co"># Report table (violations only, formatted)</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>report_tab <span class="ot">&lt;-</span> <span class="fu">conama_report</span>(df_conama, <span class="at">classe =</span> <span class="st">&quot;2&quot;</span>, <span class="at">only_violations =</span> <span class="cn">TRUE</span>, <span class="at">pretty =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="fu">print</span>(report_tab)</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 11 × 6</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;    parametro valor lim_min lim_max status           delta </span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;            &lt;chr&gt; </span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;  1 dbo       7     &lt;NA&gt;    5       acima_do_maximo  +2    </span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt;  2 dbo       6     &lt;NA&gt;    5       acima_do_maximo  +1    </span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt;  3 od        4,9   5       &lt;NA&gt;    abaixo_do_minimo -0,09 </span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt;  4 p_total   0,08  &lt;NA&gt;    0,05    acima_do_maximo  +0,03 </span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;  5 p_total   0,1   &lt;NA&gt;    0,05    acima_do_maximo  +0,05 </span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;  6 p_total   0,1   &lt;NA&gt;    0,05    acima_do_maximo  +0,05 </span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;  7 p_total   0,06  &lt;NA&gt;    0,05    acima_do_maximo  +0,010</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt;  8 p_total   0,09  &lt;NA&gt;    0,05    acima_do_maximo  +0,04 </span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt;  9 ph        5,9   6       9       abaixo_do_minimo -0,13 </span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt; 10 turbidez  112   &lt;NA&gt;    100     acima_do_maximo  +12   </span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt; 11 turbidez  141   &lt;NA&gt;    100     acima_do_maximo  +41</span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co"># Textual summary</span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>summary_text <span class="ot">&lt;-</span> <span class="fu">conama_text</span>(df_conama, <span class="at">classe =</span> <span class="st">&quot;2&quot;</span>, <span class="at">only_violations =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="fu">cat</span>(summary_text, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="co">#&gt; Conformidade CONAMA classe 2:</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="co">#&gt; - dbo: 2/20 violacoes (ex.: valor=7 (lim_max=5 delta=+2))</span></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="co">#&gt; - od: 1/20 violacoes (ex.: valor=4,9 (lim_min=5 delta=-0,09))</span></span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a><span class="co">#&gt; - p_total: 5/20 violacoes (ex.: valor=0,1 (lim_max=0,05 delta=+0,05))</span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt; - ph: 1/20 violacoes (ex.: valor=5,9 (lim_min=6 lim_max=9 delta=-0,13))</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a><span class="co">#&gt; - turbidez: 2/20 violacoes (ex.: valor=141 (lim_max=100 delta=+41))</span></span></code></pre></div>
+</div>
+</div>
+<div id="generating-plots" class="section level2" number="8">
+<h2><span class="header-section-number">8</span> Generating plots</h2>
+<div id="iqa-visualization" class="section level3" number="8.1">
+<h3><span class="header-section-number">8.1</span> IQA
+visualization</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co"># Bar plot of IQA by point</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">plot_iqa</span>(df_iqa)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="fu">print</span>(p1)</span></code></pre></div>
+<p><img role="img" aria-label="Figure generated by tikatuwq package" src="data:image/png;base64,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" alt="Figure generated by tikatuwq package" /></p>
+</div>
+<div id="time-series" class="section level3" number="8.2">
+<h3><span class="header-section-number">8.2</span> Time series</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Time series of a parameter</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">plot_series</span>(df_iqa, <span class="st">&quot;turbidez&quot;</span>, <span class="at">facet =</span> <span class="st">&quot;ponto&quot;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">print</span>(p2)</span></code></pre></div>
+<p><img role="img" aria-label="Figure generated by tikatuwq package" src="data:image/png;base64,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" alt="Figure generated by tikatuwq package" /></p>
+</div>
+<div id="box-plots" class="section level3" number="8.3">
+<h3><span class="header-section-number">8.3</span> Box plots</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Box plots by point</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">plot_box</span>(df_iqa, <span class="st">&quot;od&quot;</span>, <span class="at">by =</span> <span class="st">&quot;ponto&quot;</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">print</span>(p3)</span></code></pre></div>
+<p><img role="img" aria-label="Figure generated by tikatuwq package" src="data:image/png;base64,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" alt="Figure generated by tikatuwq package" /></p>
+</div>
+<div id="heatmap" class="section level3" number="8.4">
+<h3><span class="header-section-number">8.4</span> Heatmap</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co"># Reshape to long format</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>df_long <span class="ot">&lt;-</span> df_iqa <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(data, ponto, turbidez, od, dbo, ph) <span class="sc">%&gt;%</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(turbidez, od, dbo, ph),</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">&quot;parametro&quot;</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">&quot;valor&quot;</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co"># Heatmap</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">plot_heatmap</span>(df_long)</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="fu">print</span>(p4)</span></code></pre></div>
+<p><img role="img" aria-label="Figure generated by tikatuwq package" src="data:image/png;base64,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" alt="Figure generated by tikatuwq package" /></p>
+</div>
+</div>
+<div id="generating-a-textual-analysis-and-report" class="section level2" number="9">
+<h2><span class="header-section-number">9</span> Generating a textual
+analysis and report</h2>
+<p>The <code>generate_analysis()</code> function produces human-readable
+paragraphs summarizing water quality:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Generate analytical text</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>analysis_text <span class="ot">&lt;-</span> <span class="fu">generate_analysis</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  df_iqa,</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="at">classe_conama =</span> <span class="st">&quot;2&quot;</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  <span class="at">incluir_tendencia =</span> <span class="cn">FALSE</span>,  <span class="co"># Set TRUE if you have temporal data</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="at">contexto =</span> <span class="fu">list</span>(<span class="at">river =</span> <span class="st">&quot;Demo River&quot;</span>, <span class="at">period =</span> <span class="st">&quot;2025&quot;</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>)</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(analysis_text, <span class="at">collapse =</span> <span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>))</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt; Assessing the Water Quality Index (IQA) for the Demo River river in 2025 we observed an average of 91.4, ranging from 85.4 to 95.7. The dominant class was excellent. The best-performing point was FBS-BRH-450 (IQA~92.1), whereas FBS-BRH-300 presented the lowest value (IQA~90.7).</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt; Regarding compliance with CONAMA 357/2005 (class 2), violations were recorded, with p_total as the most critical parameter and point FBS-BRH-300 concentrating the highest number of occurrences.</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt; The spatial variation of IQA was approximately 10.4 points between extremes.</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt; It is recommended to assess organic load/BOD and re-aeration in affected stretches; inspect bank erosion and soil management in the basin; prioritizing critical points.</span></span></code></pre></div>
+<p>For a full HTML report:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Generate HTML report (requires rmarkdown)</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="co"># report_path &lt;- render_report(</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#   df_iqa,</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#   meta = list(river = &quot;Demo River&quot;, period = &quot;2025&quot;),</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#   output_dir = tempdir()</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co"># )</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co"># # Open in browser</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co"># browseURL(report_path)</span></span></code></pre></div>
+</div>
+<div id="summary-and-next-steps" class="section level2" number="10">
+<h2><span class="header-section-number">10</span> Summary and next
+steps</h2>
+<p>This vignette demonstrated a complete workflow:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Read data</strong>: <code>read_wq()</code> with censored
+value handling</li>
+<li><strong>Validate</strong>: <code>validate_wq()</code> to check
+required columns</li>
+<li><strong>Clean units</strong>: <code>clean_units()</code> for unit
+conversion and validation</li>
+<li><strong>Compute indices</strong>: <code>iqa()</code> for water
+quality index</li>
+<li><strong>Check compliance</strong>: <code>conama_check()</code>,
+<code>conama_summary()</code>, <code>conama_report()</code></li>
+<li><strong>Visualize</strong>: <code>plot_iqa()</code>,
+<code>plot_series()</code>, <code>plot_box()</code>,
+<code>plot_heatmap()</code></li>
+<li><strong>Report</strong>: <code>generate_analysis()</code> and
+<code>render_report()</code></li>
+</ol>
+<div id="next-steps" class="section level3" number="10.1">
+<h3><span class="header-section-number">10.1</span> Next steps</h3>
+<ul>
+<li>Explore temporal trends with <code>trend_param()</code> and
+<code>plot_trend()</code></li>
+<li>Use <code>param_analysis()</code> functions for parameter-specific
+analysis</li>
+<li>Create interactive maps with <code>plot_map()</code> if coordinates
+are available</li>
+<li>Adapt the workflow to your own datasets</li>
+</ul>
+<p>For more details, see: - The methods vignette for index calculations
+and trend analysis - Package documentation:
+<code>help(package = &quot;tikatuwq&quot;)</code> - Online documentation: <a href="https://tikatuwq.github.io/tikatuwq/" class="uri">https://tikatuwq.github.io/tikatuwq/</a></p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
