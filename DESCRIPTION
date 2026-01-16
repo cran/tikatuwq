@@ -1,7 +1,7 @@
 Package: tikatuwq
 Type: Package
 Title: Water Quality Assessment and Environmental Compliance in Brazil
-Version: 0.8.0
+Version: 0.8.2
 Authors@R: 
     c(person(given = "Vinicius",
              family = "Saraiva Santos",
@@ -18,8 +18,9 @@ LazyData: true
 LazyDataCompression: xz
 Depends: R (>= 4.1)
 Imports: dplyr, readr, tibble, rlang, stats, utils, ggplot2, tidyr,
-        lubridate, stringr, glue, scales, broom, purrr, leaflet
-Suggests: testthat (>= 3.0.0), spelling, rmarkdown, knitr, pkgdown
+        lubridate, stringr, glue, scales, broom, purrr
+Suggests: testthat (>= 3.0.0), spelling, rmarkdown, knitr, pkgdown,
+        leaflet, withr
 VignetteBuilder: knitr
 URL: https://github.com/tikatuwq/tikatuwq,
         https://tikatuwq.github.io/tikatuwq/
@@ -27,8 +28,8 @@ BugReports: https://github.com/tikatuwq/tikatuwq/issues
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-11-16 15:46:04 UTC; Vini
+Packaged: 2025-12-27 08:35:37 UTC; Vini
 Author: Vinicius Saraiva Santos [aut, cre] (ORCID:
     <https://orcid.org/0009-0007-1387-7927>)
 Repository: CRAN
-Date/Publication: 2025-11-17 21:50:39 UTC
+Date/Publication: 2026-01-16 13:00:02 UTC
