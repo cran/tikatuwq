@@ -34,18 +34,31 @@
 #' }
 #'
 #' @param df Data frame com ao menos a coluna \code{date_col}.
-#' @param region Character; regiao climatica. Uma de \code{"sudeste"},
+#' @param region Character ou \code{NULL} (default); regiao climatica usada
+#'   para definir o calendario chuvoso/seco. Uma de \code{"sudeste"},
 #'   \code{"bahia"}, \code{"centro_oeste"}, \code{"nordeste"},
-#'   \code{"norte"}, \code{"sul"} ou \code{"custom"}.
+#'   \code{"norte"}, \code{"sul"} ou \code{"custom"}. Este argumento e
+#'   **opcional**: muitas analises de qualidade da agua nao consideram
+#'   sazonalidade regional. Se \code{region = NULL}:
+#'   \itemize{
+#'     \item se \code{wet_months} for fornecido, ele e usado diretamente
+#'       (equivalente a \code{region = "custom"});
+#'     \item caso contrario, a coluna \code{season} e preenchida com
+#'       \code{NA} e uma mensagem informativa e exibida (sem erro), de
+#'       forma que o restante do fluxo de analise nao e bloqueado.
+#'   }
 #' @param date_col Character; nome da coluna de datas. Default \code{"data"}.
 #' @param wet_months Integer vector; meses numericos do periodo chuvoso
 #'   (1 = Jan ... 12 = Dez). Obrigatorio quando \code{region = "custom"}.
+#'   Tambem pode ser usado com \code{region = NULL} para definir um
+#'   calendario personalizado sem escolher uma regiao predefinida.
 #' @param labels Character vector de comprimento 2 com os rotulos para os
 #'   periodos chuvoso e seco, nesta ordem.
 #'   Default \code{c("chuvoso", "seco")}.
 #'
 #' @returns O \code{df} de entrada com a coluna \code{season} adicionada
-#'   (character).
+#'   (character, podendo ser \code{NA} quando nenhuma regiao/calendario
+#'   for informado).
 #'
 #' @seealso \code{\link[=compare_seasons]{compare_seasons()}}
 #'
@@ -56,28 +69,49 @@
 #' d <- assign_season(wq_demo, region = "bahia")
 #' table(d$season)
 #'
+#' # region e opcional: sem informa-la, season fica NA (sem erro)
+#' d2 <- assign_season(wq_demo)
+#' table(d2$season, useNA = "always")
+#'
 #' @export
 assign_season <- function(
   df,
-  region    = c("sudeste","bahia","centro_oeste","nordeste","norte","sul","custom"),
+  region    = NULL,
   date_col  = "data",
   wet_months = NULL,
   labels    = c("chuvoso", "seco")
 ) {
-  region <- match.arg(region)
   stopifnot(is.data.frame(df))
   if (!date_col %in% names(df)) {
     stop("Coluna '", date_col, "' nao encontrada.")
   }
   if (length(labels) != 2) stop("'labels' deve ter exatamente 2 elementos.")
 
-  if (region == "custom") {
-    if (is.null(wet_months) || !length(wet_months)) {
-      stop("Fornecer 'wet_months' quando region = 'custom'.")
+  valid_regions <- c("sudeste", "bahia", "centro_oeste", "nordeste",
+                      "norte", "sul", "custom")
+
+  if (is.null(region)) {
+    if (!is.null(wet_months) && length(wet_months)) {
+      rainy <- as.integer(wet_months)
+    } else {
+      df[["season"]] <- NA_character_
+      message(
+        "assign_season(): nenhuma 'region' ou 'wet_months' foi informada; ",
+        "a coluna 'season' foi preenchida com NA. Para classificar por ",
+        "periodo hidrologico, informe region (ex.: 'bahia') ou wet_months."
+      )
+      return(df)
     }
-    rainy <- as.integer(wet_months)
   } else {
-    rainy <- .season_calendar[[region]]
+    region <- match.arg(region, valid_regions)
+    if (region == "custom") {
+      if (is.null(wet_months) || !length(wet_months)) {
+        stop("Fornecer 'wet_months' quando region = 'custom'.")
+      }
+      rainy <- as.integer(wet_months)
+    } else {
+      rainy <- .season_calendar[[region]]
+    }
   }
 
   dates  <- as.Date(df[[date_col]])

@@ -6,7 +6,7 @@
 \usage{
 assign_season(
   df,
-  region = c("sudeste", "bahia", "centro_oeste", "nordeste", "norte", "sul", "custom"),
+  region = NULL,
   date_col = "data",
   wet_months = NULL,
   labels = c("chuvoso", "seco")
@@ -15,14 +15,26 @@ assign_season(
 \arguments{
 \item{df}{Data frame com ao menos a coluna \code{date_col}.}
 
-\item{region}{Character; regiao climatica. Uma de \code{"sudeste"},
+\item{region}{Character ou \code{NULL} (default); regiao climatica usada
+para definir o calendario chuvoso/seco. Uma de \code{"sudeste"},
 \code{"bahia"}, \code{"centro_oeste"}, \code{"nordeste"},
-\code{"norte"}, \code{"sul"} ou \code{"custom"}.}
+\code{"norte"}, \code{"sul"} ou \code{"custom"}. Este argumento e
+\strong{opcional}: muitas analises de qualidade da agua nao consideram
+sazonalidade regional. Se \code{region = NULL}:
+\itemize{
+\item se \code{wet_months} for fornecido, ele e usado diretamente
+(equivalente a \code{region = "custom"});
+\item caso contrario, a coluna \code{season} e preenchida com
+\code{NA} e uma mensagem informativa e exibida (sem erro), de
+forma que o restante do fluxo de analise nao e bloqueado.
+}}
 
 \item{date_col}{Character; nome da coluna de datas. Default \code{"data"}.}
 
 \item{wet_months}{Integer vector; meses numericos do periodo chuvoso
-(1 = Jan ... 12 = Dez). Obrigatorio quando \code{region = "custom"}.}
+(1 = Jan ... 12 = Dez). Obrigatorio quando \code{region = "custom"}.
+Tambem pode ser usado com \code{region = NULL} para definir um
+calendario personalizado sem escolher uma regiao predefinida.}
 
 \item{labels}{Character vector de comprimento 2 com os rotulos para os
 periodos chuvoso e seco, nesta ordem.
@@ -30,7 +42,8 @@ Default \code{c("chuvoso", "seco")}.}
 }
 \value{
 O \code{df} de entrada com a coluna \code{season} adicionada
-(character).
+(character, podendo ser \code{NA} quando nenhuma regiao/calendario
+for informado).
 }
 \description{
 Adiciona a coluna \code{season} ao data frame, classificando cada
@@ -55,6 +68,10 @@ sul, regiao do Rio Buranhem, ES.}
 data("wq_demo", package = "tikatuwq")
 d <- assign_season(wq_demo, region = "bahia")
 table(d$season)
+
+# region e opcional: sem informa-la, season fica NA (sem erro)
+d2 <- assign_season(wq_demo)
+table(d2$season, useNA = "always")
 
 }
 \seealso{
