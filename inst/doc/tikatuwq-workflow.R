@@ -49,7 +49,7 @@ df_clean <- clean_units(df)
 
 ## ----compute-iqa--------------------------------------------------------------
 # Compute IQA
-df_iqa <- iqa(df_clean, na_rm = TRUE)
+df_iqa <- iqa(df_clean, allow_partial = TRUE)
 
 # View results
 head(df_iqa[, c("ponto", "IQA", "IQA_status")])

@@ -33,7 +33,7 @@ sum(default_weights)
 
 ## ----compute-iqa--------------------------------------------------------------
 # Compute IQA with default settings
-df_iqa <- iqa(wq_demo, na_rm = TRUE)
+df_iqa <- iqa(wq_demo, allow_partial = TRUE)
 
 # View results
 cols_show <- intersect(c("ponto", "IQA", "IQA_status"), names(df_iqa))
@@ -47,7 +47,7 @@ hist(df_iqa$IQA, breaks = 10, main = "IQA Distribution", xlab = "IQA")
 df_missing <- wq_demo
 df_missing$tds <- NULL  # Remove one parameter
 
-df_iqa_missing <- iqa(df_missing, na_rm = TRUE)
+df_iqa_missing <- iqa(df_missing, allow_partial = TRUE)
 head(df_iqa_missing$IQA)
 
 ## ----iqa-custom-weights-------------------------------------------------------
@@ -59,12 +59,12 @@ custom_weights <- c(
   nt_total = 0.10,
   p_total = 0.10,
   turbidez = 0.10,
-  tds = 0.10,
+  solidos_totais = 0.10,
   pH = 0.05,
   temperatura = 0.05
 )
 
-df_iqa_custom <- iqa(wq_demo, pesos = custom_weights, na_rm = TRUE)
+df_iqa_custom <- iqa(wq_demo, pesos = custom_weights, allow_partial = TRUE)
 cols_show2 <- intersect(c("IQA", "IQA_status"), names(df_iqa_custom))
 head(df_iqa_custom[, cols_show2, drop = FALSE])
 
@@ -90,7 +90,7 @@ table(df_iqa$IQA_status)
 # # iet_carlson(df_lake, .keep_ids = TRUE)
 
 ## ----iet-lamparelli, eval=FALSE-----------------------------------------------
-# # iet_lamparelli(df_lake, .keep_ids = TRUE)
+# # iet_lamparelli(df_lake, ambiente = "reservatorio", .keep_ids = TRUE)
 
 ## ----trend-single-------------------------------------------------------------
 # Add temporal structure to demo data

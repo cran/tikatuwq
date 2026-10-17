@@ -2,7 +2,7 @@
 % Please edit documentation in R/iqa_equations.R
 \name{iqa_components}
 \alias{iqa_components}
-\title{Auditoria detalhada dos subindices do IQA (CETESB oficial)}
+\title{Auditoria detalhada dos subindices do IQA (metodo CETESB)}
 \usage{
 iqa_components(
   df,
@@ -11,7 +11,9 @@ iqa_components(
   microbial_type = c("thermotolerant_coliforms", "e_coli"),
   temperature_method = c("cetesb_default", "delta", "reference"),
   temperature_reference = NULL,
-  censor_policy = c("limit", "half_limit", "zero", "na", "preserve")
+  delta_temperature = NULL,
+  censor_policy = c("limit", "half_limit", "zero", "na", "preserve"),
+  method = c("CETESB", "IGAM")
 )
 }
 \arguments{
@@ -27,7 +29,14 @@ iqa_components(
 
 \item{temperature_reference}{Vetor ou escalar com temperatura de referencia.}
 
+\item{delta_temperature}{Vetor ou escalar com a variacao de temperatura (Delta T em graus Celsius).}
+
 \item{censor_policy}{Politica de tratamento de dados censurados ("limit", "half_limit", "zero", "na", "preserve").}
+
+\item{method}{Motor de calculo: \code{"CETESB"} (padrao) ou \code{"IGAM"}.
+Para o IGAM os componentes sao obtidos com
+\code{iqa(df, method = "IGAM", details = TRUE)}; aqui \code{"IGAM"} gera
+erro com essa orientacao.}
 }
 \value{
 Um tibble ou data frame detalhado com colunas para cada parametro e o IQA calculado.
